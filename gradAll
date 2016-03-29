@@ -1,0 +1,18 @@
+function [px,py,pxx,pxy,pyy,p1,p2] =gradAll(img,N)
+h = fspecial('gaussian',2*N+1,N);
+h = h.*[-ones(2*N+1,N) zeros(2*N+1,1) ones(2*N+1,N)];
+px = imfilter(img,h,'symmetric');
+py = imfilter(img,h','symmetric');
+N = 1;
+h = fspecial('gaussian',2*N+1,N);
+h = h.*[-ones(2*N+1,N) zeros(2*N+1,1) ones(2*N+1,N)];
+pxx = imfilter(px,h,'symmetric');
+pxy = imfilter(px,h','symmetric');
+pyy = imfilter(py,h','symmetric');
+
+p1 = sqrt(px.^2+py.^2);
+th = atan2(py,px);
+p2 = pxx.*(cos(th).^2)+pxy.*sin(2*th)+pyy.*(sin(th).^2);
+end
+
+
