@@ -10,6 +10,8 @@ NA=0.35;                            % For Wafer NA = 1.4 or 1.35;
 Sigma = 1;                          % Source Bandwidth
 lembda=193;                         % unit is "nm"
 n=1.44;                             % Refractive Index Mask=1, Wafer=1.44;
+nr = 1.490;                         % Refractive Index Photo-Resist = 1.490;
+kr = 0;                             % Absorption Parameter = ?;
 p = 0:24;                           % Zernike Polynomial Length;
 
 ams_pz = 17.488;                    % unit is "nm"
@@ -28,6 +30,8 @@ Mypara.NA = NA;
 Mypara.Sigma = Sigma;
 Mypara.lembda = lembda;
 Mypara.n = n;
+Mypara.nr = nr;
+Mypara.kr = kr;
 Mypara.p = p;
 Mypara.ams_pz = ams_pz;
 Mypara.ams_grid = ams_grid;
@@ -73,8 +77,10 @@ Samspath = sr_pathS;
 Samslist = {tlist.name};
 
 %% Generate Pupil & Light Source
-[Paims, Pscanner, P0_norm] = Vector_Pupil(Mypara);
+% [Paims, Pscanner, P0_norm] = Vector_Pupil(Mypara);
+[RPaims, RPscanner,P0_norm] = Vector_RPupil(Mypara);
 am = size(P0_norm);
+
 if ~Sann
     %%%%%%%%%%%%%% Light Source File %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     mysrf = fopen(fullfile(sr_path1,sr_name1),'r');
@@ -113,11 +119,11 @@ ATCC_freqxx = {TCC2_ams{1,:}}; ATCC_freqxy = {TCC2_ams{2,:}};
 Alm = slm_ams;
 % save('NFreqMxTCC_ams.mat','TCC4_ams','lm_ams','TCC2_ams','slm_ams');
 
-% [TCC4_scanner, lm_scanner, TCC2_scanner,slm_scanner] = Vector_TCCfreq(Pscanner,Jsource,Mypara,false);
+[TCC4_scanner, lm_scanner, TCC2_scanner,slm_scanner] = Vector_TCCfreq(RPscanner,Jsource,Mypara,false);
 STCC_freqxx = {TCC2_scanner{1,:}}; STCC_freqxy = {TCC2_scanner{2,:}}; 
 % STCC_freqyx = {TCC4_scanner{3,:}}; STCC_freqyy = {TCC4_scanner{4,:}}; 
 Slm = slm_scanner;
-% save('NFreqMxTCC_scaneer.mat','TCC4_scanner','lm_scanner','TCC2_scanner','slm_scanner');
+save('PR_NFreqMxTCC_scaneer.mat','TCC4_scanner','lm_scanner','TCC2_scanner','slm_scanner');
 
 %% Mask Transmission Function
 mask_ts = imread(fullfile(gdspath,gdslist{1}));
@@ -326,8 +332,8 @@ Scanner_sim=zeros(size(mask_ts3));
 for k=1:(Sord)
     Scanner_sim = Scanner_sim + (Slm(k))*(ifft2(Fmask_ts3.*STCC_freqfinal{k})).^2;
 end;
-Sgain = 2.2846;
-Scanner_sim = (Sgain*abs(Scanner_sim));
+Sgain = 0.6750 % Without Resist Sgain = 2.2846;
+% Scanner_sim = (Sgain*abs(Scanner_sim));
 Nsize = size(Scanner_sim(11:end-10,11:end-10));
 figure(30); imshow(Scanner_sim,[]); colormap jet; colorbar;
 Tempdiff = [abs(AMS_org(11:end-10,11:end-10)-Scanner_org(11:end-10,11:end-10)) abs(Scanner_sim(11:end-10,11:end-10)-Scanner_org(11:end-10,11:end-10))];
